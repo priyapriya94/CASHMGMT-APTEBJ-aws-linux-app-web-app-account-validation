@@ -1,0 +1,67 @@
+server:
+  port : 8080
+spring:
+  main:
+    allow-bean-definition-overriding: true
+  primary:
+    datasource:
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      jdbc-url: jdbc:mysql://${PRIMARY_DATABASE_URL}
+      port: ${DATABASE_PORT}
+      username: ${DATABASE_USERNAME}
+      password: ${DATABASE_PASSWORD}
+  replica:
+    datasource:
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      jdbc-url: jdbc:mysql://${SECONDARY_DATABASE_URL}
+      port: ${DATABASE_PORT}
+      username: ${DATABASE_USERNAME}
+      password: ${DATABASE_PASSWORD}
+  jpa:
+    open-in-view: false
+    properties:
+      hibernate:
+        generate_statistics: true
+        enable_lazy_load_no_trans: true
+        format_sql: false
+        hbm2ddl:
+          auto: none
+        show_sql: true
+      javax:
+        persistence:
+          sharedCache:
+            mode: ALL
+  hibernate:
+    dialect: org.hibernate.dialect.MySQL5Dialect
+    generate_statistics: true
+hibernate:
+  jdbc:
+    batch_size: 20
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+endpoints:
+  logfile:
+    enabled: true
+logging:
+  file: /var/log/account-validation/account-validation.log
+  config: /opt/apt/account-validation/logback.xml
+  level:
+    root: ${ROOT_LOG_LEVEL}
+    com:
+      telus:
+        apt:
+          logging: ${COM_LOG_LEVEL}
+      amazonaws:
+         xray: ${XRAY_LOG_LEVEL}
+apt:
+  tracing:
+    enabled: true
+  web:
+    recognizedHosts: ${WEBAPP_TYPE}.apt*.ca*
+    name: WEB-APPLICATION
+aws:
+  mail:
+    from: do-not-reply@apt${ENVIRONMENT}.ca
