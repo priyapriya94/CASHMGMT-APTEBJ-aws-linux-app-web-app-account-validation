@@ -1,67 +1,67 @@
-server:
-  port : 8080
-spring:
-  main:
-    allow-bean-definition-overriding: true
-  primary:
-    datasource:
-      driver-class-name: com.mysql.cj.jdbc.Driver
-      jdbc-url: jdbc:mysql://${PRIMARY_DATABASE_URL}
-      port: ${DATABASE_PORT}
-      username: ${DATABASE_USERNAME}
-      password: ${DATABASE_PASSWORD}
-  replica:
-    datasource:
-      driver-class-name: com.mysql.cj.jdbc.Driver
-      jdbc-url: jdbc:mysql://${SECONDARY_DATABASE_URL}
-      port: ${DATABASE_PORT}
-      username: ${DATABASE_USERNAME}
-      password: ${DATABASE_PASSWORD}
-  jpa:
-    open-in-view: false
-    properties:
-      hibernate:
-        generate_statistics: true
-        enable_lazy_load_no_trans: true
-        format_sql: false
-        hbm2ddl:
-          auto: none
-        show_sql: true
-      javax:
-        persistence:
-          sharedCache:
-            mode: ALL
-  hibernate:
-    dialect: org.hibernate.dialect.MySQL5Dialect
-    generate_statistics: true
-hibernate:
-  jdbc:
-    batch_size: 20
-management:
-  endpoints:
-    web:
-      exposure:
-        include: '*'
-endpoints:
-  logfile:
-    enabled: true
-logging:
-  file: /var/log/account-validation/account-validation.log
-  config: /opt/apt/account-validation/logback.xml
-  level:
-    root: ${ROOT_LOG_LEVEL}
-    com:
-      telus:
-        apt:
-          logging: ${COM_LOG_LEVEL}
-      amazonaws:
-         xray: ${XRAY_LOG_LEVEL}
-apt:
-  tracing:
-    enabled: true
-  web:
-    recognizedHosts: ${WEBAPP_TYPE}.apt*.ca*
-    name: WEB-APPLICATION
-aws:
-  mail:
-    from: do-not-reply@apt${ENVIRONMENT}.ca
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+	<appender name="consoleAppender"
+		class="ch.qos.logback.core.ConsoleAppender">
+		<encoder
+			class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+			<providers>
+				<timestamp />
+				<version />
+				<sequence>
+					<fieldName>sequenceNumberField</fieldName>
+				</sequence>
+				<loggerName>
+					<shortenedLoggerNameLength>20</shortenedLoggerNameLength>
+				</loggerName>
+				<threadName />
+				<logLevel />
+				<mdc />
+				<message />
+				<arguments />
+				<callerData>
+					<fieldName>caller</fieldName>
+					<classFieldName>class</classFieldName>
+					<methodFieldName>method</methodFieldName>
+					<fileFieldName>file</fileFieldName>
+					<lineFieldName>line</lineFieldName>
+				</callerData>
+				<throwableClassName />
+				<throwableRootCauseClassName>
+					<useSimpleClassName>false</useSimpleClassName>
+				</throwableRootCauseClassName>
+				<stackHash />
+				<stackTrace>
+					<throwableConverter
+						class="net.logstash.logback.stacktrace.ShortenedThrowableConverter">
+						<maxDepthPerThrowable>20</maxDepthPerThrowable>
+						<maxLength>1000</maxLength>
+						<shortenedClassNameLength>30</shortenedClassNameLength>
+						<rootCauseFirst>true</rootCauseFirst>
+						<inlineHash>true</inlineHash>
+					</throwableConverter>
+				</stackTrace>
+			</providers>
+		</encoder>
+	</appender>
+​
+	<appender name="asyncAppender"
+		class="net.logstash.logback.appender.LoggingEventAsyncDisruptorAppender">
+		<appender class="ch.qos.logback.core.read.ListAppender" />
+		<listener
+			class="net.logstash.logback.appender.listener.LoggingEventAppenderListenerImpl" />
+		<appender-ref ref="consoleAppender" />
+	</appender>
+​
+	<logger name="com.telus.apt" level="${APT_LOG_LEVEL:-INFO}" additivity="false">
+		<appender-ref ref="asyncAppender" />
+	</logger>
+​
+	<logger name="org.hibernate.SQL" level="${APT_SQL_LOG_LEVEL:-INFO}">
+		<appender-ref ref="asyncAppender" />
+	</logger>
+​
+	<root level="${ROOT_LOG_LEVEL:-INFO}">
+		<appender-ref ref="asyncAppender" />
+	</root>
+​
+</configuration>
